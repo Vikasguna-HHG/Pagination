@@ -44,10 +44,30 @@ function Home() {
     const handlecompany = (e) => {
         if (e.target.checked === false) {
             setcompany("")
+        } else if (e.target.value === "All") {
+            companyData.map((item, i) => {
+                return setcompany(item);
+            })
+            // setcompany(categoryData)
         } else {
             setcompany(e.target.value);
         }
     }
+
+
+    const handlecolor = (e) => {
+        if (e.target.checked === false) {
+            setcolors("")
+        } else if (e.target.value === "All") {
+            companyData.map((item, i) => {
+                return setcolors(item);
+            })
+            // setcolors(categoryData)
+        } else {
+            setcolors(e.target.value);
+        }
+    }
+
 
     const getUniqueData = (data, property) => {
         let newVal = data.map((item, i) => {
@@ -59,7 +79,8 @@ function Home() {
             newVal = newVal.flat();
         }
 
-        return (newVal = ["All", ...new Set(newVal)]);
+        // return (newVal = ["All", ...new Set(newVal)]);
+        return (newVal = [...new Set(newVal)]);
 
     };
 
@@ -67,6 +88,7 @@ function Home() {
     const companyData = getUniqueData(list, "company");
     const colorsData = getUniqueData(list, "colors");
     const price = getUniqueData(list, "price");
+
 
     const max = Math.max(...price)
     return (
@@ -83,7 +105,7 @@ function Home() {
             {companyData.map((item, i) => {
                 return (
                     <>
-                        <input key={i} type='checkbox' name='category' value={item} onClick={handlecompany} />{item}
+                        <input key={i} type='checkbox' name='company' value={item} onClick={handlecompany} />{item}
                     </>
                 )
             })}
@@ -92,13 +114,14 @@ function Home() {
             {colorsData.map((item, i) => {
                 return (
                     <>
-                        <button key={i} type='button' name='colors' value={item} onClick={handlecategory} style={{ color: { item } }} >{item}</button>
+                        {/* <button key={i} type='button' name='colors' value={item} onClick={handlecategory} style={{ color: { item } }} >{item}</button> */}
+                        <input key={i} type='checkbox' name='colors' value={item} onClick={handlecolor} />{item}
                     </>
                 )
             })}
 
             {
-                currentPosts.filter((data, i) => { return data.category === category || data.company === company }).map((item, i) => {
+                currentPosts.filter((data, i) => { return data.category === category || data.company === company || data.colors[i++] === colors }).map((item, i) => {
                     return (
                         <>
                             <Container>
