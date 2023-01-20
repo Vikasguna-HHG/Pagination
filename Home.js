@@ -14,7 +14,6 @@ function Home() {
     const [postsPerPage, setPostsPerPage] = useState(10);
 
 
-
     useEffect(() => {
         axios.get('https://api.pujakaitem.com/api/products').then((res) => {
             setList(res.data)
@@ -24,15 +23,29 @@ function Home() {
     const firstPostIndex = lastPostIndex - postsPerPage;
     const currentPosts = list.slice(firstPostIndex, lastPostIndex);
 
-    const handleInput = (e) => {
-        debugger
+    const handlecategory = (e) => {
 
-        if (e.target.value == "all") {
-            return list
+        if (e.target.checked === false) {
+            setcategory("")
+        } else if (e.target.value === "All") {
+            categoryData.map((item, i) => {
+                return setcategory(item);
+            })
+            // setcategory(categoryData)
         } else {
             setcategory(e.target.value);
+        }
+
+
+    }
+
+    console.log(category);
+
+    const handlecompany = (e) => {
+        if (e.target.checked === false) {
+            setcompany("")
+        } else {
             setcompany(e.target.value);
-            setcolors(e.target.value);
         }
     }
 
@@ -46,7 +59,7 @@ function Home() {
             newVal = newVal.flat();
         }
 
-        return (newVal = ["all", ...new Set(newVal)]);
+        return (newVal = ["All", ...new Set(newVal)]);
 
     };
 
@@ -56,13 +69,12 @@ function Home() {
     const price = getUniqueData(list, "price");
 
     const max = Math.max(...price)
-    console.log(max)
     return (
         <div>
             {categoryData.map((item, i) => {
                 return (
                     <>
-                        <button key={i} type='button' name='category' value={item} onClick={handleInput} >{item}</button>
+                        <input key={i} type='checkbox' name='category' value={item} onClick={handlecategory} />{item}
                     </>
                 )
             })}
@@ -71,7 +83,7 @@ function Home() {
             {companyData.map((item, i) => {
                 return (
                     <>
-                        <button key={i} type='button' name='company' value={item} onClick={handleInput} >{item}</button>
+                        <input key={i} type='checkbox' name='category' value={item} onClick={handlecompany} />{item}
                     </>
                 )
             })}
@@ -80,13 +92,13 @@ function Home() {
             {colorsData.map((item, i) => {
                 return (
                     <>
-                        <button key={i} type='button' name='colors' value={item} onClick={handleInput} style={{ color: { item } }} >{item}</button>
+                        <button key={i} type='button' name='colors' value={item} onClick={handlecategory} style={{ color: { item } }} >{item}</button>
                     </>
                 )
             })}
 
             {
-                currentPosts.filter((data, i) => { return data.category === category || data.company === company || data.colors[i] === colors }).map((item, i) => {
+                currentPosts.filter((data, i) => { return data.category === category || data.company === company }).map((item, i) => {
                     return (
                         <>
                             <Container>
