@@ -1,0 +1,36 @@
+/*----------------------------------------Search box----------------------------------------*/
+.search-click {
+    border: none;
+    outline: none;
+    background-size: 22px;
+    background-position: 13px;
+    border-radius: 10px;
+    width: 160px;
+    padding: 10px !important;
+    transition: all 0.5s;
+    position: relative;
+    overflow: hidden;
+    height: 35px;
+    right: 0px;
+    float: right;
+    cursor: pointer;
+    top: 19px;
+    background-color: #fff;
+    font-size: 16px;
+}
+
+
+
+
+.search-click input {
+    border: 1px solid #ccc;
+    font-size: 16px;
+    outline: none;
+    position: absolute;
+    width: 160px;
+    height: 35px;
+    left: 0%;
+    padding: 10px;
+    color: #333;
+    border-bottom: 1px solid #fff;
+}
