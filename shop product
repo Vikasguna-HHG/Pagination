@@ -1,0 +1,451 @@
+import React, { useState, useEffect } from "react";
+import { Link, NavLink, useParams } from 'react-router-dom';
+import Footer from '../Footer';
+import Header from '../Header';
+import CommonService from "../../services/commonService";
+import urlConstant from "../../constants/urlConstant";
+import { ToastContainer } from "react-toastify";
+import { ToasterWarning, ToasterError } from "../../common/toaster";
+import Pagination from "../Pagination";
+import axios from 'axios'
+import { useAppContext } from '../../context/index'
+
+function ShopProduct() {
+    const id = useParams();
+    const { user_id, wishlistPost, Loding, CartPost } = useAppContext();
+    let common = new CommonService();
+
+    const [List, setList] = useState([]);
+    const [price, setPrice] = useState(100);
+    const [category, setcategory] = useState([]);
+    const [color, setcolor] = useState(List);
+    const [brand, setBrand] = useState(List);
+    const [size, setSize] = useState(List);
+
+    const [isLoading, setIsLoading] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [postsPerPage, setPostsPerPage] = useState(20);
+    const lastPostIndex = currentPage * postsPerPage;
+    const firstPostIndex = lastPostIndex - postsPerPage;
+    const currentPosts = List.slice(firstPostIndex, lastPostIndex);
+    const Getlength = List.length;
+
+
+    function GetProducts() {
+        setIsLoading(true)
+        const GetAllProducts = `${urlConstant.Products.GetProducts}`;
+        axios.get(GetAllProducts).then(function (res) {
+            setIsLoading(false);
+            setList(res.data.data);
+        })
+            .catch(function (error) {
+                setIsLoading(false);
+
+                ToasterWarning(error.message)
+                console.log(error);
+            });
+    }
+
+
+
+    const handleInput = (e) => {
+
+        if (e.target.checked === false) {
+            setcategory(old => {
+                const newSet = new Set(old);
+                newSet.delete(e.target.value)
+                return Array.from(newSet)
+                old.splice(old.findIndex(item => item === e.target.value), 0)
+                return old;
+            });
+            setcolor("");
+            setBrand("");
+            setSize("");
+        } else {
+            setPrice(e.target.value);
+            setcategory(old => e.target.value ? Array.from(new Set([...old, e.target.value])) : old);
+            setcolor(e.target.value);
+            setBrand(e.target.value);
+            setSize(e.target.value);
+        }
+    }
+
+    const phandleInput = (e) => {
+        setPrice(e.target.value);
+    }
+
+    const getUniqueData = (data, property) => {
+        let newVal = data.map((item, i) => {
+            return item[property];
+        });
+
+        if (property === "colors" || "multipleSize") {
+            return newVal = [...new Set(newVal.flat())]
+        } else {
+            // return (newVal = ["All", ...new Set(newVal)]);
+            return (newVal = [...new Set(newVal)]);
+        }
+
+    };
+
+
+
+    const categoryData = getUniqueData(List, "category");
+    const colorsData = getUniqueData(List, "colors");
+    const brandData = getUniqueData(List, "brand");
+    const sizeData = getUniqueData(List, "multipleSize");
+    const priceData = getUniqueData(List, "base_discounted_price");
+    const MaxPrice = Math.max(...priceData);
+    const MinPrice = Math.min(...priceData);
+
+    useEffect(() => {
+        GetProducts();
+    }, []);
+    return (
+        <div>
+            <ToastContainer />
+            <Header />
+            {isLoading ? <Loding /> : ShopProduct}
+            <main className="main">
+                <div className="page-header breadcrumb-wrap">
+                    <div className="container">
+                        <div className="breadcrumb">
+                            <Link to="/ShopProduct" rel="nofollow"><i className="fi-rs-home mr-5" />Home</Link>
+                            <span /> <Link to="/">Shop</Link>
+                        </div>
+                    </div>
+                </div><br />
+                <div className="container mb-30">
+                    <div className="row flex-row-reverse">
+                        <div className="col-lg-4-5">
+                            <div className="shop-product-fillter">
+                                <div className="totall-product">
+                                    <p>We found <strong className="text-brand">{Getlength}</strong> items for you!</p>
+                                </div>
+                            </div>
+
+                            <div className="row product-grid">
+                                {
+                                    currentPosts.filter((Data, i) => {
+                                        if (price || brand || category.length || color || size)
+                                            return Data.base_discounted_price > parseInt(price, 10) || Data.brand === brand || category.includes(Data.category) || Data.colors[i] === color || Data.multipleSize[i] === size
+                                        return Data
+                                    }).map((item, i) => {
+                                        const image = item.thumbnail_image == '' ? 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTu9zuWJ0xU19Mgk0dNFnl2KIc8E9Ch0zhfCg&usqp=CAU' : item.thumbnail_image
+                                        const Name = item.name.substring(0, 20);
+
+                                        return (
+
+                                            <div className="col-lg-1-5 col-md-4 col-12 col-sm-6" key={item.id}>
+                                                <div className="product-cart-wrap mb-30">
+                                                    <div className="product-img-action-wrap">
+                                                        <div className="product-img product-img-zoom">
+                                                            <Link to={`/${item.slug}`}>
+                                                                <img className="default-img" src={image} alt="/" />
+                                                                <img className="hover-img" src={image} alt="/" />
+                                                            </Link>
+                                                        </div>
+                                                        <div className="product-action-1">
+                                                            {
+                                                                user_id == null ? <Link to='/login'><a aria-label="Add To Wishlist" className="action-btn"><i className="fi-rs-heart" /></a></Link> : <a aria-label="Add To Wishlist" className="action-btn" onClick={() => { wishlistPost(item.id) }}><i className="fi-rs-heart" /></a>
+                                                            }
+
+                                                            {/* <a aria-label="Add To Wishlist" className="action-btn" onClick={() => { wishlistPost(item.id) }}><i className="fi-rs-heart" /></a> */}
+                                                            <a aria-label="Compare" className="action-btn" href="#"><i className="fi-rs-shuffle" /></a>
+                                                        </div>
+                                                        <div className="product-badges product-badges-position product-badges-mrg">
+                                                            <span className="hot">Hot</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="product-content-wrap">
+                                                        <div className="product-category">
+                                                            <a>{item.category}</a>
+                                                        </div>
+                                                        <h2><a> {Name.length > 13
+                                                            ? `${Name}...`
+                                                            : Name}</a></h2>
+                                                        <div className="product-rate-cover">
+                                                            <div className="product-rate d-inline-block">
+                                                                <div className="product-rating" style={{ width: '90%' }} />
+                                                            </div>
+                                                            <span className="font-small ml-5 text-muted"> ({item.rating})</span>
+                                                        </div>
+                                                        <div>
+                                                            <span className="font-small text-muted">By {item.brand}</span>
+                                                        </div>
+                                                        <div className="product-card-bottom">
+                                                            <div className="product-price">
+                                                                <span>₹{item.base_discounted_price}</span>
+                                                                <span className="old-price">₹{item.base_price}</span>
+                                                            </div>
+                                                            <div className="add-cart">
+                                                                {/* <a className="add" onClick={() => { CartPost(item.id, item.variants.variant) }} ><i className="fi-rs-shopping-cart mr-5" />Add </a> */}
+                                                                <Link to={`/${item.slug}`}> <a className="add"><i className="fi-rs-shopping-cart mr-5" />Add </a> </Link>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+
+                                        )
+                                    })
+                                }
+                            </div>
+
+                            <Pagination
+                                totalPosts={List.length}
+                                postsPerPage={postsPerPage}
+                                setCurrentPage={setCurrentPage}
+                                currentPage={currentPage}
+                            />
+                            {/* <div className="row">
+                                <div className="col-lg-12 mb-40" style={{textAlign: "center"}}>
+                                    <a href="#" className="btn btn-fill-out btn-block mt-30">View More Products</a>
+                                </div>
+                            </div> */}
+
+                        </div>
+                        <div className="col-lg-1-5 primary-sidebar sticky-sidebar">
+                            {/* Fillter By Price */}
+                            <div className="sidebar-widget price_range range mb-30">
+                                <h5 className="section-title style-1 mb-30">Fill by price</h5>
+                                <div className="price-filter">
+                                    <div className="price-filter-inner">
+                                        {/* <div id="slider-range" className="mb-20" /> */}
+                                        <div className="d-flex justify-content-between">
+                                            <div className="caption"><h6>Price Range : </h6> <strong id="slider-range-value1" className="text-brand" /></div>
+                                            <div className="caption"><h6>₹{MinPrice} - ₹{MaxPrice} </h6> <strong id="slider-range-value2" className="text-brand" /></div>
+                                        </div>
+                                        <input type="range" name="price" onInput={phandleInput} min={MinPrice} max={MaxPrice - 1} />
+                                    </div>
+                                </div>
+                                <div className="list-group">
+                                    <div className="list-group-item mb-10 mt-10">
+                                        <label className="fw-900">Category</label>
+                                        <div className="custome-checkbox">
+                                            {
+                                                categoryData.map((item, i) => {
+
+
+                                                    return (
+                                                        <>
+                                                            <Link to={`?category=${category.toString()}`}>h</Link>
+                                                            <input className="form-check-input" key={'box-' + item} type="checkbox" name="categoryData" value={item} id={item + i} onClick={handleInput} defaultValue />
+                                                            <label className="form-check-label" key={'label-' + item} name='categoryData' htmlFor={item + i} onClick={handleInput}><span>{item}</span></label>
+                                                            <br />
+
+                                                        </>
+                                                    )
+                                                })
+                                            }
+                                        </div>
+
+                                        <label className="fw-900">Brand</label>
+                                        <div className="custome-checkbox">
+
+                                            {
+
+                                                brandData.map((item, i) => {
+                                                    return (
+                                                        <>
+
+                                                            <input className="form-check-input" type="checkbox" name="brandData" value={item} id={item + i} onClick={handleInput} defaultValue />
+                                                            <label className="form-check-label" name='brandData' htmlFor={item + i}><span>{item}</span></label><br />
+                                                        </>
+                                                    )
+                                                })
+                                            }
+                                        </div>
+                                        <label className="fw-900">Size</label>
+                                        <div className="custome-checkbox">
+
+                                            {
+                                                sizeData.map((item, i) => {
+                                                    return (
+                                                        <>
+                                                            <input id={item} className="check-size-input" type="checkbox" name={item} value={item} onClick={handleInput} defaultValue />
+                                                            <label className="check-size-label" htmlFor={item}>{item}</label>
+                                                        </>
+                                                    )
+                                                })
+                                            }
+                                        </div>
+                                        <div></div>
+                                        {/* <span style={{width:"100%"}}></span> */}
+                                        <label className="fw-900" style={{ width: "100%" }}>Colour</label>
+                                        <div className="custome-checkbox">
+                                            {
+                                                colorsData.map((item, i) => {
+
+                                                    return (
+                                                        <>
+                                                            <input id={item} className="check-size-input" type="checkbox" name="colorData" value={`${item}`} onClick={handleInput} />
+                                                            <label className="color-check-size-label" style={{ backgroundColor: `${item}` }} for={item} ></label>
+
+                                                        </>
+                                                    )
+                                                })
+                                            }
+
+                                        </div>
+                                        <label className="fw-900 mt-15">Avg.Customer Review</label>
+                                        <div className="custome-checkbox">
+                                            <p className="star-set">
+                                                <span className="star-in-set star-4">★★★★★ <span style={{ color: "#95A1A9", fontSize: "15px" }}>& Up</span></span>
+                                            </p>
+                                            <p className="star-set">
+                                                <span className="star-in-set star-3">★★★★★ <span style={{ color: "#95A1A9", fontSize: "15px" }}>& Up</span></span>
+                                            </p>
+                                            <p className="star-set">
+                                                <span className="star-in-set star-2">★★★★★ <span style={{ color: "#95A1A9", fontSize: "15px" }}>& Up</span></span>
+                                            </p>
+                                            <p className="star-set">
+                                                <span className="star-in-set star-1">★★★★★ <span style={{ color: "#95A1A9", fontSize: "15px" }}>& Up</span></span>
+                                            </p>
+                                        </div>
+                                        <label className="fw-900 mt-15">Price</label>
+                                        <div className="custome-checkbox">
+                                            <input className="form-check-input" type="checkbox" name="checkbox" id="priceCheckbox1" defaultValue />
+                                            <label className="form-check-label" htmlFor="priceCheckbox1"><span>Under ₹300</span></label>
+                                            <br />
+                                            <input className="form-check-input" type="checkbox" name="checkbox" id="priceCheckbox2" defaultValue />
+                                            <label className="form-check-label" htmlFor="priceCheckbox2"><span>₹300 - ₹500</span></label>
+                                            <br />
+                                            <input className="form-check-input" type="checkbox" name="checkbox" id="priceCheckbox3" defaultValue />
+                                            <label className="form-check-label" htmlFor="priceCheckbox3"><span>₹500 - ₹1,000</span></label>
+                                            <br />
+                                            <input className="form-check-input" type="checkbox" name="checkbox" id="priceCheckbox4" defaultValue />
+                                            <label className="form-check-label" htmlFor="priceCheckbox4"><span>₹1,000 - ₹1,500</span></label>
+                                            <br />
+                                            <input className="form-check-input" type="checkbox" name="checkbox" id="priceCheckbox5" defaultValue />
+                                            <label className="form-check-label" htmlFor="priceCheckbox5"><span>Over ₹1,500</span></label>
+                                        </div>
+                                        <label className="fw-900 mt-15">Offer</label>
+                                        <div className="custome-checkbox">
+                                            <input className="form-check-input" type="checkbox" name="checkbox" id="offerCheckbox1" defaultValue />
+                                            <label className="form-check-label" htmlFor="offerCheckbox1"><span>Under ₹300</span></label>
+                                            <br />
+                                            <input className="form-check-input" type="checkbox" name="checkbox" id="offerCheckbox2" defaultValue />
+                                            <label className="form-check-label" htmlFor="offerCheckbox2"><span>₹300 - ₹500</span></label>
+                                            <br />
+                                            <input className="form-check-input" type="checkbox" name="checkbox" id="offerCheckbox3" defaultValue />
+                                            <label className="form-check-label" htmlFor="offerCheckbox3"><span>₹500 - ₹1,000</span></label>
+                                            <br />
+                                            <input className="form-check-input" type="checkbox" name="checkbox" id="offerCheckbox4" defaultValue />
+                                            <label className="form-check-label" htmlFor="offerCheckbox4"><span>₹1,000 - ₹1,500</span></label>
+                                            <br />
+                                            <input className="form-check-input" type="checkbox" name="checkbox" id="offerCheckbox5" defaultValue />
+                                            <label className="form-check-label" htmlFor="offerCheckbox5"><span>Over ₹1,500</span></label>
+                                        </div>
+                                    </div>
+                                </div>
+                                {/* <a className="btn btn-sm btn-default"><i className="fi-rs-filter mr-5" /> Fillter</a> */}
+                            </div>
+                            {/* Product sidebar Widget */}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="modal fade custom-modal" id="quickViewModal" tabIndex={-1} aria-labelledby="quickViewModalLabel" aria-hidden="true">
+                    <div className="modal-dialog">
+                        <div className="modal-content">
+                            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close" />
+                            <div className="modal-body">
+                                <div className="row">
+                                    <div className="col-md-6 col-sm-12 col-xs-12 mb-md-0 mb-sm-5">
+                                        <div className="detail-gallery">
+                                            <span className="zoom-icon"><i className="fi-rs-search" /></span>
+                                            {/* MAIN SLIDES */}
+                                            <div className="product-image-slider">
+                                                <figure className="border-radius-10">
+                                                    <img src="assets/imgs/shop/product-1-1.jpg" alt="product image" />
+                                                </figure>
+                                                <figure className="border-radius-10">
+                                                    <img src="assets/imgs/shop/product-16-1.jpg" alt="product image" />
+                                                </figure>
+                                                <figure className="border-radius-10">
+                                                    <img src="assets/imgs/shop/product-16-3.jpg" alt="product image" />
+                                                </figure>
+                                                <figure className="border-radius-10">
+                                                    <img src="assets/imgs/shop/product-16-4.jpg" alt="product image" />
+                                                </figure>
+                                                <figure className="border-radius-10">
+                                                    <img src="assets/imgs/shop/product-16-5.jpg" alt="product image" />
+                                                </figure>
+                                                <figure className="border-radius-10">
+                                                    <img src="assets/imgs/shop/product-16-6.jpg" alt="product image" />
+                                                </figure>
+                                                <figure className="border-radius-10">
+                                                    <img src="assets/imgs/shop/product-16-7.jpg" alt="product image" />
+                                                </figure>
+                                            </div>
+                                            {/* THUMBNAILS */}
+                                            <div className="slider-nav-thumbnails">
+                                                <div><img src="assets/imgs/shop/thumbnail-3.jpg" alt="product image" /></div>
+                                                <div><img src="assets/imgs/shop/thumbnail-4.jpg" alt="product image" /></div>
+                                                <div><img src="assets/imgs/shop/thumbnail-5.jpg" alt="product image" /></div>
+                                                <div><img src="assets/imgs/shop/thumbnail-6.jpg" alt="product image" /></div>
+                                                <div><img src="assets/imgs/shop/thumbnail-7.jpg" alt="product image" /></div>
+                                                <div><img src="assets/imgs/shop/thumbnail-8.jpg" alt="product image" /></div>
+                                                <div><img src="assets/imgs/shop/thumbnail-9.jpg" alt="product image" /></div>
+                                            </div>
+                                        </div>
+                                        {/* End Gallery */}
+                                    </div>
+                                    <div className="col-md-6 col-sm-12 col-xs-12">
+                                        <div className="detail-info pr-30 pl-30">
+                                            <span className="stock-status out-stock"> Sale Off </span>
+                                            <h3 className="title-detail"><a href="/Product" className="text-heading">Seeds of Change Organic Quinoa, Brown</a></h3>
+                                            <div className="product-detail-rating">
+                                                <div className="product-rate-cover text-end">
+                                                    <div className="product-rate d-inline-block">
+                                                        <div className="product-rating" style={{ width: '90%' }} />
+                                                    </div>
+                                                    <span className="font-small ml-5 text-muted"> (32 reviews)</span>
+                                                </div>
+                                            </div>
+                                            <div className="clearfix product-price-cover">
+                                                <div className="product-price primary-color float-left">
+                                                    <span className="current-price text-brand">$38</span>
+                                                    <span>
+                                                        <span className="save-price font-md color3 ml-15">26% Off</span>
+                                                        <span className="old-price font-md ml-15">$52</span>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="detail-extralink mb-30">
+                                                <div className="detail-qty border radius">
+                                                    <a href="#" className="qty-down"><i className="fi-rs-angle-small-down" /></a>
+                                                    <span className="qty-val">1</span>
+                                                    <a href="#" className="qty-up"><i className="fi-rs-angle-small-up" /></a>
+                                                </div>
+                                                <div className="product-extra-link2">
+                                                    <button type="submit" className="button button-add-to-cart"><i className="fi-rs-shopping-cart" />Add to cart</button>
+                                                </div>
+                                            </div>
+                                            <div className="font-xs">
+                                                <ul>
+                                                    <li className="mb-5">Vendor: <span className="text-brand">Nest</span></li>
+                                                    <li className="mb-5">MFG:<span className="text-brand"> Jun 4.2021</span></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        {/* Detail Info */}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </main>
+
+
+            <Footer />
+        </div>
+    )
+}
+
+export default ShopProduct;
