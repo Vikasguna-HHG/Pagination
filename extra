@@ -1,6 +1,16 @@
   // Header 
   {!categoriesData?.length && !productsData?.length ? <p>Not found data...</p> : ""}
   
+  //dashbord
+    useEffect(() => {
+        if (!user_id) {
+            navigate('/')
+        }
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+        });
+    }, [])
   
   // cart 
   function CartPost(id, variant, increment, colors, size) {
