@@ -1,0 +1,37 @@
+  function CartPost(id, variant, increment, colors, size) {
+    try {
+
+      if (!size) {
+        ToasterWarning('Please Select Size')
+        return
+      } else
+      if (!colors) {
+          ToasterWarning('Please Select Color')
+          return
+      }
+      else
+      if (!colors || !size) {
+        ToasterWarning('Please Select Color & Size')
+        return
+      }
+      
+      let tempid = localStorage.getItem('tempid');
+      if (!tempid) {
+        localStorage.setItem('tempid', random);
+        tempid = localStorage.getItem('tempid');
+      }
+      const localtempid = user_id == null ? tempid : user_id;
+      setIsLoading(true)
+      const Data = { id, variant: variant, quantity: increment || 1, user_id: parseInt(user_id), localtempid: parseInt(localtempid), colors, size }
+      const CartData = `${urlConstant.Cart.PostCart}`;
+      axios.post(CartData, Data, {
+        headers: { "Authorization": `Bearer ${localStorage.getItem('access_token')}` }
+      }).then(() => {
+        ToasterSuccess("Success...!!");
+        setIsLoading(false)
+      })
+    }
+    catch (error) {
+      ToasterError("Error")
+    }
+  }
