@@ -1,3 +1,8 @@
+  // Header 
+  {!categoriesData?.length && !productsData?.length ? <p>Not found data...</p> : ""}
+  
+  
+  // cart 
   function CartPost(id, variant, increment, colors, size) {
     try {
 
