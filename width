@@ -1,0 +1,26 @@
+function getCurrntDimensions() {
+	return {
+		width: window.innerWidth,
+		height: window.innerHeight
+	}
+}
+function useDimensionHook(){
+	const[currentDimenstion,setCurrentDimenstion] = useState(getCurrntDimensions());
+
+	useEffect(()=>{
+		const handleResize=()=>{setCurrentDimenstion(getCurrntDimensions())}
+
+		window.addEventListener('resize', handleResize)
+		
+		return ()=> window.removeEventListener('resize', handleResize)
+	},[])
+
+	return currentDimenstion;
+}
+
+
+const{height,width}=useDimensionHook();
+
+const isMobile = width <=768 
+
+{!isMobile && <span className="for-desktop"> Newest </span>}	
