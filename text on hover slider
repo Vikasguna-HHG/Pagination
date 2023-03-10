@@ -1,0 +1,71 @@
+import React, { useEffect, useRef, useState } from "react";
+import './FlipBook.css'
+
+
+const FlipBook = ({ name, href, coverImageSrc }) => {
+    const isNameLong = name.length > 15 ? true : false;
+    const shortName = `${name.substring(0, 15)}...`;
+
+    const [shownName, setShownName] = useState( isNameLong ?shortName: name)
+    const coverbase = "https://django-2rb3r.ondigitalocean.app/static/"
+
+    const onMouserOverEvent = (e) => {
+        if (isNameLong) {
+            setShownName(name)
+        }
+    }
+    const onMouserLeaveEvent = (e) => {
+        if (isNameLong) {
+            setShownName(shortName)
+        }
+    }
+    return (
+        <>
+            <a href={href}>
+                <img
+                    className="img-fluid custom-slick-img"
+                    src={coverbase + coverImageSrc}
+                    style={{ height: "255px", width: "auto" }}
+                />
+            </a>
+            <div className={isNameLong ? 'scroll-left' : ''} style={{ marginTop: '12px' }}>
+                <h6 style={{ color: 'white', padding: 0, textAlign: 'center' }} onMouseOver={onMouserOverEvent} onMouseOut={onMouserLeaveEvent}>
+                    {shownName}
+
+                </h6>
+            </div>
+
+        </>
+    )
+}
+export default FlipBook;
+
+
+
+
+.scroll-left {
+ height: 50px;	
+ overflow: hidden;
+ position: relative;
+ white-space: nowrap;
+}
+.scroll-left h6:hover {
+ position: absolute;
+ width: 100%;
+ height: 100%;
+ margin: 0;
+ /* line-height: 50px; */
+ /* text-align: center; */
+ transform:translateX(-100%);
+ animation: scroll-left 10s linear infinite;
+}
+/* Move it (define the animation) */
+@keyframes scroll-left {
+ 0%   {
+ transform: translateX(0); 		
+ }
+ 100% {
+ transform: translateX(-100%); 
+ }
+}
+
